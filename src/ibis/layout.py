@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Generator
 from dataclasses import dataclass, fields
-from typing import Generator
 
 
 class MalformedRegionError(Exception):
@@ -34,7 +34,7 @@ class Region:
 
     def __repr__(self) -> str:
         prefix = (
-            f"({self.file_offset:#x}, {self.file_offset+self.size:#x}) -> "
+            f"({self.file_offset:#x}, {self.file_offset + self.size:#x}) -> "
             if self.file_offset is not None
             else ""
         )

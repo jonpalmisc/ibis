@@ -20,7 +20,7 @@ class App(Enum):
         match name:
             case "SecureROM":
                 return cls.ROM
-            case "iBoot" | "iBSS" | "iBEC" | "AVPBooter":
+            case "iBoot" | "iBootStage2" | "iBSS" | "iBEC" | "AVPBooter":
                 return cls.IBOOT
             case _:
                 raise UnsupportedAppError(name)

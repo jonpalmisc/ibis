@@ -1,11 +1,12 @@
-from common import corpus_binary
+from common import open_corpus_binary
+
 from ibis.analyzer import analyze
 from ibis.driver import BinaryIODriver
 from ibis.layout import Region
 
 
 def test_rom_v1873_t7000si():
-    with corpus_binary("SecureROM-1873.0.0.1.19-t7000si") as f:
+    with open_corpus_binary("SecureROM-1873.0.0.1.19-t7000si") as f:
         layout = analyze(BinaryIODriver(f))
 
         assert layout.text == Region(0x100000000, 0x100015080, 0)
@@ -16,7 +17,7 @@ def test_rom_v1873_t7000si():
 
 
 def test_rom_v3332_t8015si():
-    with corpus_binary("SecureROM-3332.0.0.1.23-t8015si") as f:
+    with open_corpus_binary("SecureROM-3332.0.0.1.23-t8015si") as f:
         layout = analyze(BinaryIODriver(f))
 
         assert layout.text == Region(0x100000000, 0x100017240, 0)
@@ -27,7 +28,7 @@ def test_rom_v3332_t8015si():
 
 
 def test_rom_v6338_t8110si():
-    with corpus_binary("SecureROM-6338.0.0.200.19-t8110si") as f:
+    with open_corpus_binary("SecureROM-6338.0.0.200.19-t8110si") as f:
         layout = analyze(BinaryIODriver(f))
 
         assert layout.text == Region(0x100000000, 0x1000286C0, 0)
@@ -38,7 +39,7 @@ def test_rom_v6338_t8110si():
 
 
 def test_rom_v8104_t8130si():
-    with corpus_binary("SecureROM-8104.0.0.201.4-t8130si") as f:
+    with open_corpus_binary("SecureROM-8104.0.0.201.4-t8130si") as f:
         layout = analyze(BinaryIODriver(f))
 
         assert layout.text == Region(0x100000000, 0x100057BC0, 0)
@@ -49,7 +50,7 @@ def test_rom_v8104_t8130si():
 
 
 def test_iboot_v8419_d421ap():
-    with corpus_binary("iBoot-8419.0.42.112.1-d421ap.RELEASE") as f:
+    with open_corpus_binary("iBoot-8419.0.42.112.1-d421ap.RELEASE") as f:
         layout = analyze(BinaryIODriver(f))
 
         assert layout.text == Region(0x19C050000, 0x19C14C100, 0)
@@ -59,7 +60,7 @@ def test_iboot_v8419_d421ap():
 
 
 def test_illb_v11881_n841ap():
-    with corpus_binary("iLLB-11881.140.96-n841ap.RELEASE") as f:
+    with open_corpus_binary("iLLB-11881.140.96-n841ap.RELEASE") as f:
         layout = analyze(BinaryIODriver(f))
 
         assert layout.text == Region(0x19C050000, 0x19C14A040, 0)

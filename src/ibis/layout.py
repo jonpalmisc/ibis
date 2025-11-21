@@ -32,6 +32,9 @@ class Region:
     def __gt__(self, rhs: "Region") -> bool:
         return self.start > rhs.end
 
+    def __lt__(self, rhs: "Region") -> bool:
+        return self.end < rhs.start
+
     def __repr__(self) -> str:
         prefix = (
             f"({self.file_offset:#x}, {self.file_offset + self.size:#x}) -> "

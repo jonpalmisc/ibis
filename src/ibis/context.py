@@ -29,6 +29,17 @@ class App(Enum):
         return self.value
 
 
+class TagParseError(Exception):
+    pass
+
+
+def version_from_tag(tag: str) -> int:
+    try:
+        return int(tag.split("-")[1].split(".")[0])
+    except Exception as e:
+        raise TagParseError(tag) from e
+
+
 @dataclass
 class Context:
     """Context to inform analysis."""
@@ -38,4 +49,4 @@ class Context:
 
     def __init__(self, banner: str, tag: str) -> None:
         self.app = App.from_banner(banner)
-        self.version = int(tag.split("-")[1].split(".")[0])
+        self.version = version_from_tag(tag)

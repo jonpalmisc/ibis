@@ -10,6 +10,10 @@ class UnsupportedVersionError(Exception):
     pass
 
 
+class AnalysisError(Exception):
+    pass
+
+
 def _align_down(v: int, size: int) -> int:
     return v & ~(size - 1)
 
@@ -34,6 +38,13 @@ def _read_table(driver: Driver, count: int) -> list[int]:
     return table
 
 
+def _find_first(data: bytes, needles: list[bytes]) -> int | None:
+    indices = [data.find(n) for n in needles]
+    indices = [i for i in indices if i >= 0]
+
+    return min(indices) if indices else None
+
+
 def _detect_layout_v1585(context: Context, driver: Driver) -> Layout:
     table = _read_table(driver, 12)
 
@@ -47,15 +58,15 @@ def _detect_layout_v1585(context: Context, driver: Driver) -> Layout:
     while cur > 0:
         chunk = driver.read(cur, chunk_size)
 
-        chunk_idx = chunk.find(b"nor0\x00")
-        if chunk_idx > 0:
+        chunk_idx = _find_first(chunk, [b"nor0\x00", b"%llx:%d\x00"])
+        if chunk_idx:
             const_start_offset = _align_down(cur + chunk_idx, 0x10)
             break
 
         cur -= chunk_size
 
     if not const_start_offset:
-        raise ValueError("oops")
+        raise AnalysisError("failed to find CONST start")
 
     logging.debug(f"Found CONST start offset: {const_start_offset:#x}")
 
@@ -69,13 +80,6 @@ def _detect_layout_v1585(context: Context, driver: Driver) -> Layout:
     return Layout(text, const, data, bss)
 
 
-def _find_first(data: bytes, needles: list[bytes]) -> int | None:
-    indices = [data.find(n) for n in needles]
-    indices = [i for i in indices if i >= 0]
-
-    return min(indices) if indices else None
-
-
 def _detect_layout_v7195(context: Context, driver: Driver) -> Layout:
     table = _read_table(driver, 12)
 
@@ -85,7 +89,7 @@ def _detect_layout_v7195(context: Context, driver: Driver) -> Layout:
     chunk_size = 0x4000
     const_start_offset = None
 
-    logging.debug("Searching for CONST marker from...")
+    logging.debug("Searching for CONST marker...")
     while cur < const_end_offset:
         chunk = driver.read(cur, chunk_size)
 
@@ -99,7 +103,7 @@ def _detect_layout_v7195(context: Context, driver: Driver) -> Layout:
         cur += chunk_size
 
     if not const_start_offset:
-        raise ValueError("oops")
+        raise AnalysisError("failed to find CONST start")
 
     logging.debug(f"Found CONST start offset: {const_start_offset:#x}")
 
@@ -130,7 +134,7 @@ def analyze(driver: Driver) -> Layout:
     if ctx.version.major < VERSION_MIN:
         raise UnsupportedVersionError(ctx.version)
 
-    if ctx.version.major > 6338:
+    if ctx.version.major > 6800:
         layout = _detect_layout_v7195(ctx, driver)
     else:
         layout = _detect_layout_v1585(ctx, driver)

@@ -38,6 +38,16 @@ def test_rom_v6338_t8110si():
         assert layout.bss == Region(0x1FC00C680, 0x1FC028081)
 
 
+def test_iboot_v6723_n104ap():
+    with open_corpus_binary("iBoot-6723.42.3-n104-fbbc050") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x19C030000, 0x19C160280, 0)
+        assert layout.const == Region(0x19C160280, 0x19C16D160, 0x130280)
+        assert layout.data == Region(0x19C170000, 0x19C2ADB00, 0x13D160)
+        assert layout.bss == Region(0x19C2ADB00, 0x19C2D42A2)
+
+
 def test_rom_v8104_t8130si():
     with open_corpus_binary("SecureROM-8104.0.0.201.4-t8130si") as f:
         layout = analyze(BinaryIODriver(f))

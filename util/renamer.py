@@ -41,7 +41,7 @@ def main():
             try:
                 ctx = driver.detect_context()
             except Exception:
-                print(f"Failed to detect context for file: {path}")
+                logging.error(f"Failed to detect context for file: {path}")
                 raise
 
             new_name = f"{ctx.app}-{ctx.version}-{ctx.target}-{shorthash}"

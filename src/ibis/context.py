@@ -66,10 +66,10 @@ class Context:
 
     app: App
     version: Version
-    soc: str
+    target: str
 
     def __init__(self, banner: str, tag: str) -> None:
-        app, self.soc = _parse_banner(banner)
+        app, self.target = _parse_banner(banner)
 
         self.app = App(app)
         self.version = Version(tag)

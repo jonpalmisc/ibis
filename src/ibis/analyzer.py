@@ -119,17 +119,16 @@ def _detect_layout_v7195(context: Context, driver: Driver) -> Layout:
 
 
 VERSION_MIN = 1873
-VERSION_MAX = 12000
 
 
 def analyze(driver: Driver) -> Layout:
     ctx = driver.detect_context()
     logging.info(f"Detected {ctx.app} version {ctx.version}.")
 
-    if not (VERSION_MIN <= ctx.version < VERSION_MAX):
+    if ctx.version.major < VERSION_MIN:
         raise UnsupportedVersionError(ctx.version)
 
-    if ctx.version > 6338:
+    if ctx.version.major > 6338:
         layout = _detect_layout_v7195(ctx, driver)
     else:
         layout = _detect_layout_v1585(ctx, driver)

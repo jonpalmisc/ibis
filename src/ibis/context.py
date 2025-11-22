@@ -3,6 +3,17 @@ from dataclasses import dataclass
 from enum import Enum
 
 
+class BannerParseError(Exception):
+    pass
+
+
+def _parse_banner(banner: str) -> tuple[str, str]:
+    try:
+        return re.findall(r"(\w+) for (\w+),.*", banner)[0]
+    except Exception as e:
+        raise BannerParseError(banner) from e
+
+
 class UnsupportedAppError(Exception):
     pass
 
@@ -14,9 +25,7 @@ class App(Enum):
     IBOOT = "iBoot"
 
     @classmethod
-    def from_banner(cls, banner: str) -> "App":
-        name = re.findall(r"(\w+) for \w+,.*", banner)[0]
-
+    def parse(cls, name: str):
         match name:
             case "SecureROM":
                 return cls.ROM
@@ -33,11 +42,22 @@ class TagParseError(Exception):
     pass
 
 
-def version_from_tag(tag: str) -> int:
-    try:
-        return int(tag.split("-")[1].split(".")[0])
-    except Exception as e:
-        raise TagParseError(tag) from e
+class Version:
+    _parts: list[int]
+
+    def __init__(self, tag: str):
+        try:
+            version = tag.split("-")[1]
+            self._parts = [int(p) for p in version.split(".")]
+        except Exception as e:
+            raise TagParseError(tag) from e
+
+    @property
+    def major(self) -> int:
+        return self._parts[0]
+
+    def __str__(self) -> str:
+        return ".".join(str(p) for p in self._parts)
 
 
 @dataclass
@@ -45,8 +65,11 @@ class Context:
     """Context to inform analysis."""
 
     app: App
-    version: int
+    version: Version
+    soc: str
 
     def __init__(self, banner: str, tag: str) -> None:
-        self.app = App.from_banner(banner)
-        self.version = version_from_tag(tag)
+        app, self.soc = _parse_banner(banner)
+
+        self.app = App(app)
+        self.version = Version(tag)

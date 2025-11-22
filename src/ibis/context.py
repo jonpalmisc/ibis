@@ -37,9 +37,6 @@ class App(Enum):
             case _:
                 raise UnsupportedAppError(name)
 
-    def is_rom(self) -> bool:
-        return self == App.ROM
-
     def __str__(self) -> str:
         return self.value
 

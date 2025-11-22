@@ -38,42 +38,22 @@ def _read_table(driver: Driver, count: int) -> list[int]:
     return table
 
 
-def _find_first(data: bytes, needles: list[bytes]) -> int | None:
-    indices = [data.find(n) for n in needles]
-    indices = [i for i in indices if i >= 0]
-
-    return min(indices) if indices else None
-
-
-def _detect_layout_v1585(context: Context, driver: Driver) -> Layout:
+def _detect_layout_v1585(_: Context, driver: Driver) -> Layout:
     table = _read_table(driver, 12)
 
     const_end_offset = table[2]
-
-    cur = const_end_offset
-    chunk_size = 0x800
-    const_start_offset = None
-
-    logging.debug(f"Searching backwards for CONST marker from {cur:#x}...")
-    while cur > 0:
-        chunk = driver.read(cur, chunk_size)
-
-        chunk_idx = _find_first(chunk, [b"nor0\x00", b"%llx:%d\x00"])
-        if chunk_idx:
-            const_start_offset = _align_down(cur + chunk_idx, 0x10)
-            break
-
-        cur -= chunk_size
-
+    const_start_offset = driver.find_any(
+        [b"nor0\x00", b"%llx:%d\x00"], 0, const_end_offset, 0x800, True
+    )
     if not const_start_offset:
         raise AnalysisError("failed to find CONST start")
 
-    logging.debug(f"Found CONST start offset: {const_start_offset:#x}")
+    const_start_offset = _align_down(const_start_offset, 0x10)
+    const_start_addr = table[0] + const_start_offset
+    const_end_addr = table[0] + const_end_offset
 
-    text = Region(table[0], table[0] + const_start_offset, 0)
-    const = Region(
-        table[0] + const_start_offset, table[0] + const_end_offset, const_start_offset
-    )
+    text = Region(table[0], const_start_addr, 0)
+    const = Region(const_start_addr, const_end_addr, const_start_offset)
     data = Region(table[4], table[5], const_end_offset)
     bss = Region(table[6], table[7])
 
@@ -87,47 +67,36 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
     if context.app == App.IBOOT:
         const_end_offset = _align_down(const_end_offset, 0x4000)
 
-    cur = 0
-    chunk_size = 0x4000
-    const_start_offset = None
+    const_markers = (
+        [b"virt_firmware\x00", b"double panic in\x00"]
+        if context.app == App.AVPBOOTER
+        else [
+            b"nor0\x00",
+            b"spi_nand0\x00",
+            b"darwinos-ramdisk\x00",
+        ]
+    )
 
-    logging.debug(f"Searching for CONST marker up to {const_end_offset:#x}...")
-    while cur < const_end_offset:
-        chunk = driver.read(cur, chunk_size)
-
-        if context.app == App.AVPBOOTER:
-            markers = [b"virt_firmware\x00", b"double panic in\x00"]
-        else:
-            markers = [
-                b"nor0\x00",
-                b"spi_nand0\x00",
-                b"darwinos-ramdisk\x00",
-            ]
-
-        chunk_idx = _find_first(chunk, markers)
-        if chunk_idx:
-            const_start_offset = _align_up(cur + chunk_idx, 0x10)
-            break
-
-        cur += chunk_size
-
+    const_start_offset = driver.find_any(const_markers, 0, const_end_offset, 0x4000)
     if not const_start_offset:
         raise AnalysisError("failed to find CONST start")
 
-    logging.debug(f"Found CONST start offset: {const_start_offset:#x}")
+    const_start_offset = _align_up(const_start_offset, 0x10)
+    const_start_addr = table[0] + const_start_offset
+    const_end_addr = _align_up(table[2], 0x4000)
 
-    const_end = _align_up(table[2], 0x4000)
-
-    text = Region(table[0], table[0] + const_start_offset, 0)
-    const = Region(table[0] + const_start_offset, const_end, const_start_offset)
-
-    if context.app == App.IBOOT:
-        data = Region(const_end, table[7], const_end - table[0])
-    else:
-        data = Region(table[6], table[7], const_end - table[0])
+    text = Region(table[0], const_start_addr, 0)
+    const = Region(const_start_addr, const_end_addr, const_start_offset)
+    data = Region(
+        const_end_addr if context.app == App.IBOOT else table[6],
+        table[7],
+        const_end_addr - table[0],
+    )
 
     bss = Region(table[7], table[8])
     if bss.end < 0:
+        # FIXME: Something weird going on here on newer iBoot, table has a
+        # negative value that looks like a high memory VA.
         bss = None
 
     return Layout(text, const, data, bss)

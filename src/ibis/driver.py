@@ -24,6 +24,34 @@ class Driver(ABC):
 
         return Context(banner, tag)
 
+    @staticmethod
+    def _find_first(data: bytes, needles: list[bytes]) -> int | None:
+        indices = [data.find(n) for n in needles]
+        indices = [i for i in indices if i >= 0]
+
+        return min(indices) if indices else None
+
+    def find_any(
+        self,
+        patterns: list[bytes],
+        start: int,
+        end: int,
+        chunk_size: int,
+        backwards: bool = False,
+    ):
+        cursor = end if backwards else start
+
+        while True:
+            chunk = self.read(cursor, chunk_size)
+
+            if chunk_offset := self._find_first(chunk, patterns):
+                return cursor + chunk_offset
+
+            cursor += -chunk_size if backwards else chunk_size
+
+            if (backwards and cursor < start) or cursor >= end:
+                break
+
 
 class BinaryIODriver(Driver):
     bio: BinaryIO

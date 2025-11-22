@@ -16,7 +16,6 @@ if IBIS_PATH not in sys.path:
     sys.path.insert(0, str(IBIS_PATH))
 
 from ibis.analyzer import analyze  # noqa: E402
-from ibis.context import App  # noqa: E402
 from ibis.driver import Driver  # noqa: E402
 from ibis.layout import Layout  # noqa: E402
 
@@ -34,11 +33,9 @@ class IDADriver(Driver):
 
 def accept_file(fd, _):
     try:
-        # TODO: Add an "is iBoot" method to driver?
-        driver = IDADriver(fd)
-        app = App.from_banner(driver.read_str(0x200, 0x40))
+        ctx = IDADriver(fd).detect_context()
 
-        return {"format": f"{app.value}", "processor": "arm"}
+        return {"format": f"{ctx.app.value}", "processor": "arm"}
     except Exception as e:
         print(e)
 

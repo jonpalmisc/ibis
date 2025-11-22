@@ -5,10 +5,6 @@ from ibis.context import App, Context
 from ibis.driver import Driver
 from ibis.layout import Layout, Region
 
-BANNER_OFFSET = 0x200
-BUILD_TAG_OFFSET = 0x280
-LAYOUT_TABLE_OFFSET = 0x300
-
 
 class UnsupportedVersionError(Exception):
     pass
@@ -22,9 +18,12 @@ def _align_up(v: int, size: int) -> int:
     return _align_down(v + size - 1, size)
 
 
+_LAYOUT_TABLE_OFFSET = 0x300
+
+
 def _read_table(driver: Driver, count: int) -> list[int]:
     table = [
-        struct.unpack("q", driver.read(LAYOUT_TABLE_OFFSET + (i * 8), 8))[0]
+        struct.unpack("q", driver.read(_LAYOUT_TABLE_OFFSET + (i * 8), 8))[0]
         for i in range(count)
     ]
 
@@ -124,13 +123,7 @@ VERSION_MAX = 12000
 
 
 def analyze(driver: Driver) -> Layout:
-    banner = driver.read_str(BANNER_OFFSET, 0x40)
-    tag = driver.read_str(BUILD_TAG_OFFSET, 0x40)
-
-    logging.debug(f"Found banner: {banner}")
-    logging.debug(f"Found build tag: {tag}")
-
-    ctx = Context(banner, tag)
+    ctx = driver.detect_context()
     logging.info(f"Detected {ctx.app} version {ctx.version}.")
 
     if not (VERSION_MIN <= ctx.version < VERSION_MAX):

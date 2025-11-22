@@ -18,7 +18,6 @@ if IBIS_PATH not in sys.path:
     sys.path.insert(0, str(IBIS_PATH))
 
 from ibis.analyzer import analyze  # noqa: E402
-from ibis.context import App  # noqa: E402
 from ibis.driver import Driver  # noqa: E402
 from ibis.layout import Layout  # noqa: E402
 
@@ -100,12 +99,10 @@ class IbisView(BinaryView):
     @classmethod
     def is_valid_for_data(cls, data: BinaryView) -> bool:
         try:
-            # TODO: Add an "is iBoot" method to driver?
-            driver = BinjaDriver(data)
-            App.from_banner(driver.read_str(0x200, 0x40))
-
+            BinjaDriver(data).detect_context()
             return True
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
     @override

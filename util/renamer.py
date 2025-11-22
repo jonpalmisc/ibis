@@ -38,7 +38,11 @@ def main():
             shorthash = sha256(f.read()).hexdigest()[:7]
 
             driver = BinaryIODriver(f)
-            ctx = driver.detect_context()
+            try:
+                ctx = driver.detect_context()
+            except Exception:
+                print(f"Failed to detect context for file: {path}")
+                raise
 
             new_name = f"{ctx.app}-{ctx.version}-{ctx.target}-{shorthash}"
             print(f"{path.name} -> {new_name}")

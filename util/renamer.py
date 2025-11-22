@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+from hashlib import sha256
 from pathlib import Path
 
 from ibis.driver import BinaryIODriver
@@ -10,6 +11,9 @@ from ibis.driver import BinaryIODriver
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("dir", type=Path, help="directory to process")
+    parser.add_argument(
+        "-d", "--dry-run", action="store_true", help="show (but don't perform) renames"
+    )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="enable verbose logging"
     )
@@ -31,14 +35,17 @@ def main():
         with path.open("rb") as f:
             logging.debug(f"Processing file: {path}")
 
+            shorthash = sha256(f.read()).hexdigest()[:7]
+
             driver = BinaryIODriver(f)
             ctx = driver.detect_context()
 
-            new_name = f"{ctx.app}-{ctx.version}-{ctx.target}"
+            new_name = f"{ctx.app}-{ctx.version}-{ctx.target}-{shorthash}"
             print(f"{path.name} -> {new_name}")
 
             new_path = path.parent / new_name
-            path.rename(new_path)
+            if not args.dry_run:
+                path.rename(new_path)
 
 
 if __name__ == "__main__":

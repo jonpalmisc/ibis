@@ -121,10 +121,10 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
     text = Region(table[0], table[0] + const_start_offset, 0)
     const = Region(table[0] + const_start_offset, const_end, const_start_offset)
 
-    if context.app == App.ROM:
-        data = Region(table[6], table[7], const_end - table[0])
-    else:
+    if context.app == App.IBOOT:
         data = Region(const_end, table[7], const_end - table[0])
+    else:
+        data = Region(table[6], table[7], const_end - table[0])
 
     bss = Region(table[7], table[8])
     if bss.end < 0:

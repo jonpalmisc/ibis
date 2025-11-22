@@ -67,3 +67,13 @@ def test_illb_v11881_n841ap():
         assert layout.const == Region(0x19C14A040, 0x19C198000, 0xFA040)
         assert layout.data == Region(0x19C198000, 0x19C25F480, 0x148000)
         assert layout.bss == Region(0x19C25F480, 0x19C2837B0)
+
+
+def test_iboot_v13822_v53ap():
+    with open_corpus_binary("iBoot-13822.42.2-v53ap.RELEASE") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x1FC08C000, 0x1FC3DDA40, 0)
+        assert layout.const == Region(0x1FC3DDA40, 0x1FC3EC000, 0x351A40)
+        assert layout.data == Region(0x1FC3EC000, 0x1FC47C680, 0x360000)
+        assert layout.bss is None

@@ -81,12 +81,12 @@ def _detect_layout_v7195(context: Context, driver: Driver) -> Layout:
 
     const_end_offset = _align_down(table[2], 0x4000) - table[0]
 
-    cur = const_end_offset
+    cur = 0
     chunk_size = 0x4000
     const_start_offset = None
 
-    logging.debug(f"Searching backwards for CONST marker from {cur:#x}...")
-    while cur > 0:
+    logging.debug("Searching for CONST marker from...")
+    while cur < const_end_offset:
         chunk = driver.read(cur, chunk_size)
 
         chunk_idx = _find_first(
@@ -96,7 +96,7 @@ def _detect_layout_v7195(context: Context, driver: Driver) -> Layout:
             const_start_offset = _align_up(cur + chunk_idx, 0x10)
             break
 
-        cur -= chunk_size
+        cur += chunk_size
 
     if not const_start_offset:
         raise ValueError("oops")
@@ -114,6 +114,8 @@ def _detect_layout_v7195(context: Context, driver: Driver) -> Layout:
         data = Region(const_end, table[7], const_end - table[0])
 
     bss = Region(table[7], table[8])
+    if bss.end < 0:
+        bss = None
 
     return Layout(text, const, data, bss)
 

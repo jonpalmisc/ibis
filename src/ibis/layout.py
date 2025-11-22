@@ -56,7 +56,7 @@ class Layout:
     text: Region
     const: Region
     data: Region
-    bss: Region
+    bss: Region | None
 
     def regions(self) -> Generator[tuple[str, Region]]:
         for f in fields(self):

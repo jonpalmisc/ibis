@@ -80,22 +80,31 @@ def _detect_layout_v1585(context: Context, driver: Driver) -> Layout:
     return Layout(text, const, data, bss)
 
 
-def _detect_layout_v7195(context: Context, driver: Driver) -> Layout:
+def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
     table = _read_table(driver, 12)
 
-    const_end_offset = _align_down(table[2], 0x4000) - table[0]
+    const_end_offset = table[2] - table[0]
+    if context.app == App.IBOOT:
+        const_end_offset = _align_down(const_end_offset, 0x4000)
 
     cur = 0
     chunk_size = 0x4000
     const_start_offset = None
 
-    logging.debug("Searching for CONST marker...")
+    logging.debug(f"Searching for CONST marker up to {const_end_offset:#x}...")
     while cur < const_end_offset:
         chunk = driver.read(cur, chunk_size)
 
-        chunk_idx = _find_first(
-            chunk, [b"nor0\x00", b"spi_nand0\x00", b"darwinos-ramdisk\x00"]
-        )
+        if context.app == App.AVPBOOTER:
+            markers = [b"virt_firmware\x00", b"double panic in\x00"]
+        else:
+            markers = [
+                b"nor0\x00",
+                b"spi_nand0\x00",
+                b"darwinos-ramdisk\x00",
+            ]
+
+        chunk_idx = _find_first(chunk, markers)
         if chunk_idx:
             const_start_offset = _align_up(cur + chunk_idx, 0x10)
             break
@@ -134,8 +143,8 @@ def analyze(driver: Driver) -> Layout:
     if ctx.version.major < VERSION_MIN:
         raise UnsupportedVersionError(ctx.version)
 
-    if ctx.version.major > 6800:
-        layout = _detect_layout_v7195(ctx, driver)
+    if ctx.version.major >= 6823:
+        layout = _detect_layout_v6823(ctx, driver)
     else:
         layout = _detect_layout_v1585(ctx, driver)
 

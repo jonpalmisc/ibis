@@ -23,16 +23,22 @@ class App(Enum):
 
     ROM = "SecureROM"
     IBOOT = "iBoot"
+    AVPBOOTER = "AVPBooter"
 
     @classmethod
     def parse(cls, name: str):
         match name:
             case "SecureROM":
                 return cls.ROM
-            case "iBoot" | "iBootStage2" | "iBSS" | "iBEC" | "AVPBooter":
+            case "iBoot" | "iBootStage2" | "iBSS" | "iBEC":
                 return cls.IBOOT
+            case "AVPBooter":
+                return cls.AVPBOOTER
             case _:
                 raise UnsupportedAppError(name)
+
+    def is_rom(self) -> bool:
+        return self == App.ROM
 
     def __str__(self) -> str:
         return self.value
@@ -71,5 +77,5 @@ class Context:
     def __init__(self, banner: str, tag: str) -> None:
         app, self.target = _parse_banner(banner)
 
-        self.app = App(app)
+        self.app = App.parse(app)
         self.version = Version(tag)

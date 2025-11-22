@@ -16,6 +16,16 @@ def test_rom_v1873_t7000si_30cd00a():
         assert layout.bss == Region(0x1800807C0, 0x180087AA0)
 
 
+def test_rom_v2234_s8003si_bad3102():
+    with open_corpus_binary("SecureROM-2234.0.0.2.22-s8003si-bad3102") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x100000000, 0x100015580, 0)
+        assert layout.const == Region(0x100015580, 0x1000185CC, 0x15580)
+        assert layout.data == Region(0x180080000, 0x180080840, 0x185CC)
+        assert layout.bss == Region(0x180080840, 0x180088368)
+
+
 def test_rom_v3332_t8015si_af56128():
     with open_corpus_binary("SecureROM-3332.0.0.1.23-t8015si-af56128") as f:
         layout = analyze(BinaryIODriver(f))
@@ -38,16 +48,6 @@ def test_rom_v6338_t8110si_08c48dc():
         assert layout.bss == Region(0x1FC00C680, 0x1FC028081)
 
 
-def test_iboot_v6723_n104_fbbc050():
-    with open_corpus_binary("iBoot-6723.42.3-n104-fbbc050") as f:
-        layout = analyze(BinaryIODriver(f))
-
-        assert layout.text == Region(0x19C030000, 0x19C160280, 0)
-        assert layout.const == Region(0x19C160280, 0x19C16D160, 0x130280)
-        assert layout.data == Region(0x19C170000, 0x19C2ADB00, 0x13D160)
-        assert layout.bss == Region(0x19C2ADB00, 0x19C2D42A2)
-
-
 def test_rom_v8104_t8130si_2e19fc4():
     with open_corpus_binary("SecureROM-8104.0.0.201.4-t8130si-2e19fc4") as f:
         layout = analyze(BinaryIODriver(f))
@@ -57,6 +57,16 @@ def test_rom_v8104_t8130si_2e19fc4():
         # assert layout.rodata == Region(0x10005C000, 0x10005D000, 0x5C000)
         assert layout.data == Region(0x1FC038000, 0x1FC039000, 0x5C000)
         assert layout.bss == Region(0x1FC039000, 0x1FC048C40)
+
+
+def test_iboot_v6723_n104_fbbc050():
+    with open_corpus_binary("iBoot-6723.42.3-n104-fbbc050") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x19C030000, 0x19C160280, 0)
+        assert layout.const == Region(0x19C160280, 0x19C16D160, 0x130280)
+        assert layout.data == Region(0x19C170000, 0x19C2ADB00, 0x13D160)
+        assert layout.bss == Region(0x19C2ADB00, 0x19C2D42A2)
 
 
 def test_iboot_v8419_d421_8fdff04():
@@ -87,3 +97,33 @@ def test_iboot_v13822_v53_ff63963():
         assert layout.const == Region(0x1FC3DDA40, 0x1FC3EC000, 0x351A40)
         assert layout.data == Region(0x1FC3EC000, 0x1FC47C680, 0x360000)
         assert layout.bss is None
+
+
+def test_avp_v7459_vmapple2_ae20f87():
+    with open_corpus_binary("AVPBooter-7459.101.2-vmapple2-ae20f87") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x100000, 0x126FC0, 0)
+        assert layout.const == Region(0x126FC0, 0x128000, 0x26FC0)
+        assert layout.data == Region(0x70028000, 0x70028280, 0x28000)
+        assert layout.bss == Region(0x70028280, 0x7002C088)
+
+
+def test_avp_v10151_vmapple2_a1face9():
+    with open_corpus_binary("AVPBooter-10151.121.1-vmapple2-a1face9") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x100000, 0x132040, 0)
+        assert layout.const == Region(0x132040, 0x134000, 0x32040)
+        assert layout.data == Region(0x70028000, 0x70028780, 0x34000)
+        assert layout.bss == Region(0x70028780, 0x700340F8)
+
+
+def test_avp_v11881_vresearch1_36f5148():
+    with open_corpus_binary("AVPBooter-11881.81.2-vresearch1-36f5148") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x100000, 0x1369C0, 0)
+        assert layout.const == Region(0x1369C0, 0x138000, 0x369C0)
+        assert layout.data == Region(0x70028000, 0x70028F40, 0x38000)
+        assert layout.bss == Region(0x70028F40, 0x700340F8)

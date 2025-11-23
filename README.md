@@ -1,7 +1,7 @@
 # Ibis
 
 Ibis is a Python library with accompanying disassembler plugins for analying
-iBoot-like firmware, e.g.  SecureROM, iBoot, AVPBooter.
+iBoot-like firmware, e.g. SecureROM, iBoot, AVPBooter, etc.
 
 The primary goal of Ibis is to provide accurate memory layout information for a
 wide range of iBoot family binaries. Other public projects often map the entire
@@ -12,6 +12,27 @@ binary as a big RWX blob, which negatively affects disassembler analysis.
 A plugin for Binary Ninja and IDA Pro is included. These can be installed via
 the the included makefile with `make install-binja` and `install-ida`,
 respectively.
+
+> The plugins expect that they have been installed via symlinks. If you wish to
+> install them manually, replicate what is done in the Makefile.
+
+After installing, simply open an iBoot binary in your preferred disassembler.
+
+## Contributing
+
+Any contributions that improve Ibis' analysis or support range are welcome! :)
+
+### Testing
+
+The included integration tests reference a "corpus" and "gauntlet", which are
+collections of binaries I've used whilst developing this plugin. For a variety
+of reasons (repo size, copyright issues, etc.) these are not included in the
+repo. If you wish to contribute and run these tests, contact me and I can send
+you the exact set I am using.
+
+If you wish to assemble your own collection, `util/download.py` can be used to
+download iBoot images in bulk, and [securerom.fun](https://securerom.fun/) has a
+public collection of SecureROM dumps.
 
 ## License
 

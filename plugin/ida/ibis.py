@@ -17,7 +17,7 @@ if IBIS_PATH not in sys.path:
 
 from ibis.analyzer import analyze  # noqa: E402
 from ibis.driver import Driver  # noqa: E402
-from ibis.layout import Layout  # noqa: E402
+from ibis.layout import FALLBACK_BSS_SIZE, Layout  # noqa: E402
 
 
 class IDADriver(Driver):
@@ -89,16 +89,22 @@ def apply_layout(fd, layout: Layout):
         "DATA",
         ida_segment.SEGPERM_READ | ida_segment.SEGPERM_WRITE,
     )
-    if layout.bss:
-        add_segment(
-            fd,
-            "BSS",
-            layout.bss.file_offset,
-            layout.bss.start,
-            layout.bss.size,
-            "BSS",
-            ida_segment.SEGPERM_READ | ida_segment.SEGPERM_WRITE,
-        )
+
+    bss_start = layout.bss.start if layout.bss else layout.data.end
+    bss_size = layout.bss.size if layout.bss else FALLBACK_BSS_SIZE
+
+    if not layout.bss:
+        print("WARNING: Couldn't determine BSS segment bounds; using best guess...")
+
+    add_segment(
+        fd,
+        "BSS",
+        None,
+        bss_start,
+        bss_size,
+        "BSS",
+        ida_segment.SEGPERM_READ | ida_segment.SEGPERM_WRITE,
+    )
 
 
 def load_file(fd, neflags: int, _):

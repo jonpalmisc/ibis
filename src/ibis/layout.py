@@ -79,3 +79,6 @@ class Layout:
             prev_name, prev_region = name, region
 
         logging.debug("Layout is valid!")
+
+
+FALLBACK_BSS_SIZE = 0x090000  # Largest seen in the wild is 0x07f9d0.

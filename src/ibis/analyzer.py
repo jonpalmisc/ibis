@@ -161,7 +161,7 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
     return Layout(text, const, data, bss)
 
 
-VERSION_MIN = 1873
+VERSION_MIN = 1585 # Earliest 64-bit ROM (A7)
 
 
 def analyze(driver: Driver) -> Layout:

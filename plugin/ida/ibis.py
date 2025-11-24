@@ -49,10 +49,14 @@ def accept_file(fd, _):
     return 0
 
 
+input_size = None  # XXX: Global, set in `load_file`.
+
+
 def add_segment(
     fd, name: str, file_offset: int | None, ea: int, size: int, type: str, perm: int
 ):
-    if file_offset is not None:
+    if file_offset is not None and input_size:
+        size = min(size, input_size - file_offset)
         fd.file2base(file_offset, ea, ea + size, False)
 
     segm = ida_segment.segment_t()
@@ -121,6 +125,11 @@ def load_file(fd, neflags: int, _):
     if (neflags & ida_loader.NEF_RELOAD) != 0:
         return 1
 
+    fd.seek(0, ida_idaapi.SEEK_END)
+
+    global input_size
+    input_size = fd.tell()
+
     try:
         layout = analyze(IDADriver(fd))
         apply_layout(fd, layout)
@@ -144,15 +153,12 @@ def load_file(fd, neflags: int, _):
         print(ANALYZE_FAIL_MESSAGE)
         print(f"Please report this bug! ({ISSUES_URL})")
 
-        fd.seek(0, ida_idaapi.SEEK_END)
-        size = fd.tell()
-
         add_segment(
             fd,
             "APP",
             0,
             0,
-            size,
+            input_size,
             "CODE",
             ida_segment.SEGPERM_READ
             | ida_segment.SEGPERM_WRITE

@@ -3,20 +3,30 @@
 Ibis is a Python library with accompanying disassembler plugins for analying
 iBoot-like firmware, e.g. SecureROM, iBoot, AVPBooter, etc.
 
-The primary goal of Ibis is to provide accurate memory layout information for a
-wide range of iBoot family binaries. Other public projects often map the entire
-binary as a big RWX blob, which negatively affects disassembler analysis.
+The primary goal of Ibis is to provide **accurate memory layout information**
+for a wide range of iBoot family binaries. Other public projects often map the
+entire binary as a big RWX blob, which negatively affects disassembler analysis.
 
-## Plugins
+## Installing
 
-A plugin for Binary Ninja and IDA Pro is included. These can be installed via
-the the included makefile with `make install-binja` and `install-ida`,
-respectively.
+The Ibis plugins for Binary Ninja and IDA Pro are included in this repo and can
+be installed with the included Makefile:
 
-> The plugins expect that they have been installed via symlinks. If you wish to
-> install them manually, replicate what is done in the Makefile.
+```sh
+$ make install-binja
+$ make install-ida
+```
 
-After installing, simply open an iBoot binary in your preferred disassembler.
+> Important: The plugins expect that they have been installed via symlinks! If
+> you wish to install them manually, replicate what is done in the Makefile.
+
+After installing, simply open an iBoot binary and start reversing. :)
+
+## Troubleshooting
+
+If a binary fails to load or the detected segments don't look quite right,
+please file an issue! Ibis aims to provide widespread and accurate support for
+iBoot-like binaries, so any analysis failures are considered a bug.
 
 ## Contributing
 

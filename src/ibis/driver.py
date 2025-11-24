@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from os import SEEK_END
 from typing import BinaryIO, override
 
 from ibis.context import Context
@@ -11,6 +12,9 @@ class Driver(ABC):
 
     @abstractmethod
     def read(self, offset: int, size: int) -> bytes: ...
+
+    @abstractmethod
+    def size(self) -> int: ...
 
     def read_str(self, offset: int, size: int) -> str:
         return self.read(offset, size).split(b"\x00")[0].decode().rstrip("\x00")
@@ -39,6 +43,10 @@ class Driver(ABC):
         chunk_size: int,
         backwards: bool = False,
     ) -> int | None:
+        if start < 0:
+            raise ValueError(f"invalid search start: {start}")
+
+        end = min(end, self.size())
         cursor = end if backwards else start
 
         while True:
@@ -67,3 +75,8 @@ class BinaryIODriver(Driver):
     def read(self, offset: int, size: int) -> bytes:
         self.bio.seek(offset)
         return self.bio.read(size)
+
+    @override
+    def size(self) -> int:
+        self.bio.seek(0, SEEK_END)
+        return self.bio.tell()

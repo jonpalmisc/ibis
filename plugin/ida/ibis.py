@@ -37,6 +37,10 @@ class IDADriver(Driver):
         self.fd.seek(offset)
         return self.fd.read(size)
 
+    def size(self) -> int:
+        self.fd.seek(0, ida_idaapi.SEEK_END)
+        return self.fd.tell()
+
 
 def accept_file(fd, _):
     try:

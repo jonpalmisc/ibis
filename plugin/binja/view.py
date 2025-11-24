@@ -43,6 +43,10 @@ class BinjaDriver(Driver):
     def read(self, offset: int, size: int) -> bytes:
         return self.data.read(offset, size)
 
+    @override
+    def size(self) -> int:
+        return self.data.length
+
 
 class IbisView(BinaryView):
     long_name: str | None = "iBoot"

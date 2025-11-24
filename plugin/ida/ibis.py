@@ -6,7 +6,9 @@ import ida_bytes
 import ida_entry
 import ida_funcs
 import ida_ida
+import ida_idaapi
 import ida_idp
+import ida_kernwin
 import ida_loader
 import ida_segment
 
@@ -18,6 +20,7 @@ if IBIS_PATH not in sys.path:
 from ibis.analyzer import analyze  # noqa: E402
 from ibis.driver import Driver  # noqa: E402
 from ibis.layout import FALLBACK_BSS_SIZE, Layout  # noqa: E402
+from ibis.plugins import ANALYZE_FAIL_MESSAGE, ISSUES_URL  # noqa: E402
 
 
 class IDADriver(Driver):
@@ -114,17 +117,40 @@ def load_file(fd, neflags: int, _):
     if (neflags & ida_loader.NEF_RELOAD) != 0:
         return 1
 
-    layout = analyze(IDADriver(fd))
-    apply_layout(fd, layout)
+    try:
+        layout = analyze(IDADriver(fd))
+        apply_layout(fd, layout)
 
-    # Analysis can get confused about function bounds when if it fails to detect
-    # no-return functions. A cheap hack is to create functions starting at every
-    # PACIBSP, which shouldn't ever appear in the middle of a function.
-    for addr in range(layout.text.start, layout.text.end, 4):
-        if ida_bytes.get_dword(addr) == 0xD503237F:  # pacibsp
-            print(f"Adding function @ {addr:#x}...")
-            ida_funcs.add_func(addr)
+        # Analysis can get confused about function bounds when if it fails to detect
+        # no-return functions. A cheap hack is to create functions starting at every
+        # PACIBSP, which shouldn't ever appear in the middle of a function.
+        for addr in range(layout.text.start, layout.text.end, 4):
+            if ida_bytes.get_dword(addr) == 0xD503237F:  # pacibsp
+                print(f"Adding function @ {addr:#x}...")
+                ida_funcs.add_func(addr)
 
-    ida_entry.add_entry(0, layout.text.start, "_start", True)
+        ida_entry.add_entry(0, layout.text.start, "_start", True)
+    except Exception:
+        ida_kernwin.warning(
+            f"{ANALYZE_FAIL_MESSAGE}\n\nPlease report this bug!\n\n{ISSUES_URL}"
+        )
+
+        print(ANALYZE_FAIL_MESSAGE)
+        print(f"Please report this bug! ({ISSUES_URL})")
+
+        fd.seek(0, ida_idaapi.SEEK_END)
+        size = fd.tell()
+
+        add_segment(
+            fd,
+            "APP",
+            0,
+            0,
+            size,
+            "CODE",
+            ida_segment.SEGPERM_READ
+            | ida_segment.SEGPERM_WRITE
+            | ida_segment.SEGPERM_EXEC,
+        )
 
     return 1

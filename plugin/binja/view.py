@@ -5,12 +5,15 @@ from typing import override
 from binaryninja import (
     Architecture,
     BinaryView,
+    MessageBoxIcon,
     Platform,
     SectionSemantics,
     SegmentFlag,
     Symbol,
     SymbolType,
+    show_message_box,
 )
+from binaryninja.log import log_error
 
 IBIS_PATH = Path(__file__).resolve().parent.parent.parent / "src"
 
@@ -20,6 +23,11 @@ if IBIS_PATH not in sys.path:
 from ibis.analyzer import analyze  # noqa: E402
 from ibis.driver import Driver  # noqa: E402
 from ibis.layout import FALLBACK_BSS_SIZE, Layout  # noqa: E402
+from ibis.plugins import (  # noqa: E402
+    ANALYZE_FAIL_MESSAGE,
+    ANALYZE_FAIL_TITLE,
+    ISSUES_URL,
+)
 
 
 class BinjaDriver(Driver):
@@ -126,19 +134,45 @@ class IbisView(BinaryView):
         driver = BinjaDriver(self.parent_view)
         layout = analyze(driver)
 
-        self._apply_layout(layout)
+        try:
+            self._apply_layout(layout)
 
-        # Analysis can get confused about function bounds when if it fails to
-        # detect no-return functions. A cheap hack is to create functions
-        # starting at every PACIBSP, which shouldn't ever appear in the middle
-        # of a function.
-        for addr in range(layout.text.start, layout.text.end, 4):
-            if self.read_int(addr, 4, False) == 0xD503237F:  # pacibsp
-                self.add_function(addr)
+            if self.parse_only:
+                return True
 
-        self.add_entry_point(layout.text.start)
-        self.define_auto_symbol(
-            Symbol(SymbolType.FunctionSymbol, layout.text.start, "_start")
-        )
+            # Analysis can get confused about function bounds when if it fails to
+            # detect no-return functions. A cheap hack is to create functions
+            # starting at every PACIBSP, which shouldn't ever appear in the middle
+            # of a function.
+            for addr in range(layout.text.start, layout.text.end, 4):
+                if self.read_int(addr, 4, False) == 0xD503237F:  # pacibsp
+                    self.add_function(addr)
+
+            self.add_entry_point(layout.text.start)
+            self.define_user_symbol(
+                Symbol(SymbolType.FunctionSymbol, layout.text.start, "_start")
+            )
+
+        except Exception:
+            if self.parse_only:
+                show_message_box(
+                    ANALYZE_FAIL_TITLE,
+                    f"{ANALYZE_FAIL_MESSAGE}\n\nPlease report this bug!\n\n{ISSUES_URL}",
+                    icon=MessageBoxIcon.WarningIcon,
+                )
+
+                log_error(ANALYZE_FAIL_MESSAGE)
+                log_error(f"Please report this bug! ({ISSUES_URL})")
+
+            self._add_segment(
+                "APP",
+                0,
+                0,
+                self.parent_view.length,
+                SegmentFlag.SegmentReadable
+                | SegmentFlag.SegmentWritable
+                | SegmentFlag.SegmentExecutable,
+                SectionSemantics.ReadOnlyCodeSectionSemantics,
+            )
 
         return True

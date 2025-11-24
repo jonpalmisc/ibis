@@ -11,6 +11,7 @@ from binaryninja import (
     SegmentFlag,
     Symbol,
     SymbolType,
+    log_error_for_exception,
     show_message_box,
 )
 from binaryninja.log import log_error
@@ -153,8 +154,10 @@ class IbisView(BinaryView):
                 Symbol(SymbolType.FunctionSymbol, layout.text.start, "_start")
             )
 
-        except Exception:
+        except Exception as e:
             if self.parse_only:
+                log_error_for_exception(e)
+
                 show_message_box(
                     ANALYZE_FAIL_TITLE,
                     f"{ANALYZE_FAIL_MESSAGE}\n\nPlease report this bug!\n\n{ISSUES_URL}",

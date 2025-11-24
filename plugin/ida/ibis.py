@@ -130,7 +130,9 @@ def load_file(fd, neflags: int, _):
                 ida_funcs.add_func(addr)
 
         ida_entry.add_entry(0, layout.text.start, "_start", True)
-    except Exception:
+    except Exception as e:
+        print(e)
+
         ida_kernwin.warning(
             f"{ANALYZE_FAIL_MESSAGE}\n\nPlease report this bug!\n\n{ISSUES_URL}"
         )

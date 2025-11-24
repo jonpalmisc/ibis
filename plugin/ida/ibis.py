@@ -20,7 +20,11 @@ if IBIS_PATH not in sys.path:
 from ibis.analyzer import analyze  # noqa: E402
 from ibis.driver import Driver  # noqa: E402
 from ibis.layout import FALLBACK_BSS_SIZE, Layout  # noqa: E402
-from ibis.plugins import ANALYZE_FAIL_MESSAGE, ISSUES_URL  # noqa: E402
+from ibis.plugins import (  # noqa: E402
+    ANALYZE_FAIL_MESSAGE,
+    ISSUES_URL,
+    MISSING_BSS_BOUNDS,
+)
 
 
 class IDADriver(Driver):
@@ -97,7 +101,7 @@ def apply_layout(fd, layout: Layout):
     bss_size = layout.bss.size if layout.bss else FALLBACK_BSS_SIZE
 
     if not layout.bss:
-        print("WARNING: Couldn't determine BSS segment bounds; using best guess...")
+        print(MISSING_BSS_BOUNDS)
 
     add_segment(
         fd,

@@ -14,7 +14,7 @@ from binaryninja import (
     log_error_for_exception,
     show_message_box,
 )
-from binaryninja.log import log_error
+from binaryninja.log import log_error, log_warn
 
 IBIS_PATH = Path(__file__).resolve().parent.parent.parent / "src"
 
@@ -28,6 +28,7 @@ from ibis.plugins import (  # noqa: E402
     ANALYZE_FAIL_MESSAGE,
     ANALYZE_FAIL_TITLE,
     ISSUES_URL,
+    MISSING_BSS_BOUNDS,
 )
 
 
@@ -100,7 +101,7 @@ class IbisView(BinaryView):
         bss_size = layout.bss.size if layout.bss else FALLBACK_BSS_SIZE
 
         if not layout.bss:
-            print("WARNING: Couldn't determine BSS segment bounds; using best guess...")
+            log_warn(MISSING_BSS_BOUNDS)
 
         self._add_segment(
             "BSS",

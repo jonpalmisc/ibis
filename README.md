@@ -1,7 +1,7 @@
 # Ibis
 
 Ibis is a Python library with accompanying disassembler plugins for analying
-iBoot-like firmware, e.g. SecureROM, iBoot, AVPBooter, etc.
+64-bit iBoot-like firmware, e.g. SecureROM, iBoot, AVPBooter, etc.
 
 The primary goal of Ibis is to provide **accurate memory layout information**
 for a wide range of iBoot family binaries. Other public projects often map the

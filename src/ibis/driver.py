@@ -38,7 +38,7 @@ class Driver(ABC):
         end: int,
         chunk_size: int,
         backwards: bool = False,
-    ):
+    ) -> int | None:
         cursor = end if backwards else start
 
         while True:
@@ -51,6 +51,8 @@ class Driver(ABC):
 
             if (backwards and cursor < start) or cursor >= end:
                 break
+
+        return None
 
 
 class BinaryIODriver(Driver):

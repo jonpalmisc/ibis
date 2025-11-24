@@ -1,4 +1,5 @@
 import json
+import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -32,8 +33,14 @@ def main():
         "input", type=Path, help="input to analyze (iBoot family binary)"
     )
     parser.add_argument("-j", "--json", action="store_true", help="emit output as JSON")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="enable verbose output"
+    )
 
     args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
 
     with args.input.open("rb") as f:
         driver = BinaryIODriver(f)

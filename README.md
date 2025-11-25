@@ -7,6 +7,11 @@ The primary goal of Ibis is to provide **accurate memory layout information**
 for a wide range of iBoot family binaries. Other public projects often map the
 entire binary as a big RWX blob, which negatively affects disassembler analysis.
 
+> [!WARNING]
+> Ibis should be treated as pre-release software. It has been tested against a
+> wide array of binaries, but may have subtle errors. Please file an issue if
+> you spot something wrong!
+
 ## Installing
 
 The Ibis plugins for Binary Ninja and IDA Pro are included in this repo and can
@@ -17,10 +22,11 @@ $ make install-binja
 $ make install-ida
 ```
 
-> Important: The plugins expect that they have been installed via symlinks! If
-> you wish to install them manually, replicate what is done in the Makefile.
-
-After installing, simply open an iBoot binary and start reversing. :)
+> [!IMPORTANT]
+> The plugins expect that they have been installed via symlinks! This is done to
+> aovid having to install the package globally or configure your disassembler to
+> use a virtual environment. If you wish to install them manually, replicate
+> what is done in the Makefile.
 
 ## Troubleshooting
 

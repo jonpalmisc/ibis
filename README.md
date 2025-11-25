@@ -4,13 +4,31 @@ Ibis is a Python library with accompanying disassembler plugins for analying
 64-bit iBoot-like firmware, e.g. SecureROM, iBoot, AVPBooter, etc.
 
 The primary goal of Ibis is to provide **accurate memory layout information**
-for a wide range of iBoot family binaries. Other public projects often map the
+for a wide range of iBoot family binaries. Similar public projects map the
 entire binary as a big RWX blob, which negatively affects disassembler analysis.
 
 > [!WARNING]
 > Ibis should be treated as pre-release software. It has been tested against a
 > wide array of binaries, but may have subtle errors. Please file an issue if
 > you spot something wrong!
+
+## Features & Roadmap
+
+While Ibis' primary goal is to map segmnets correctly, some of the current and
+planned planned features is detailed as follows:
+
+- [x] Automatic detection and mapping of `TEXT`, `CONST`, `DATA`, and `BSS`
+  segments with correct boundaries and permissions.
+- [x] Function prologue detection (helps prevent run-on functions when
+  disassemblers fail to identity `noreturn` functions).
+- [ ] Automatic known function identification via string reference heuristics.
+  (https://github.com/jonpalmisc/ibis/issues/2)
+- [ ] Automatic detection & marking of outlined functions.
+  (https://github.com/jonpalmisc/ibis/issues/4)
+- [ ] 🔥🌸⁉️
+
+See the [issues tab](https://github.com/jonpalmisc/ibis/issues) for a full list
+of planned features or known issues.
 
 ## Installing
 

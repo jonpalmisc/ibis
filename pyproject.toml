@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Jon Palmisciano", email = "jp@jonpalmisc.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = []
 
 [dependency-groups]

@@ -123,7 +123,7 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
         (
             # AVPBooter has different strings.
             [b"virt_firmware\x00", b"double panic in\x00"]
-            if context.app == App.AVPBOOTER
+            if context.app == App.AVP_BOOTER
             else [
                 b"nor0\x00",
                 b"spi_nand0\x00",

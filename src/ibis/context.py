@@ -21,19 +21,25 @@ class UnsupportedAppError(Exception):
 class App(Enum):
     """iBoot family application type, e.g. ROM or iBoot."""
 
-    ROM = "SecureROM"
+    SECURE_ROM = "SecureROM"
     IBOOT = "iBoot"
-    AVPBOOTER = "AVPBooter"
+    IBOOT_STAGE_1 = "iBootStage1"
+    IBOOT_STAGE_2 = "iBootStage2"
+    AVP_BOOTER = "AVPBooter"
 
     @classmethod
     def parse(cls, name: str):
         match name:
             case "SecureROM":
-                return cls.ROM
-            case "iBoot" | "iBootStage1" | "iBootStage2" | "iBSS" | "iBEC":
+                return cls.SECURE_ROM
+            case "iBoot" | "iBSS" | "iBEC":
                 return cls.IBOOT
+            case "iBootStage1":
+                return cls.IBOOT_STAGE_1
+            case "iBootStage2":
+                return cls.IBOOT_STAGE_2
             case "AVPBooter":
-                return cls.AVPBOOTER
+                return cls.AVP_BOOTER
             case _:
                 raise UnsupportedAppError(name)
 

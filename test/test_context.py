@@ -11,9 +11,12 @@ from ibis.context import (
 
 
 def test_parse_app():
-    assert App.parse("SecureROM") == App.ROM
+    assert App.parse("SecureROM") == App.SECURE_ROM
     assert App.parse("iBoot") == App.IBOOT
-    assert App.parse("iBootStage2") == App.IBOOT
+    assert App.parse("iBSS") == App.IBOOT
+    assert App.parse("iBEC") == App.IBOOT
+    assert App.parse("iBootStage1") == App.IBOOT_STAGE_1
+    assert App.parse("iBootStage2") == App.IBOOT_STAGE_2
 
     with pytest.raises(UnsupportedAppError):
         App.parse("iBootStage3")

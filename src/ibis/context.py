@@ -30,7 +30,7 @@ class App(Enum):
         match name:
             case "SecureROM":
                 return cls.ROM
-            case "iBoot" | "iBootStage2" | "iBSS" | "iBEC":
+            case "iBoot" | "iBootStage1" | "iBootStage2" | "iBSS" | "iBEC":
                 return cls.IBOOT
             case "AVPBooter":
                 return cls.AVPBOOTER

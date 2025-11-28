@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 from os import SEEK_END
-from typing import BinaryIO, override
+from typing import BinaryIO
 
 from ibis.context import Context
 
@@ -71,12 +71,12 @@ class BinaryIODriver(Driver):
 
         self.bio = bio
 
-    @override
+    # @override
     def read(self, offset: int, size: int) -> bytes:
         self.bio.seek(offset)
         return self.bio.read(size)
 
-    @override
+    # @override
     def size(self) -> int:
         self.bio.seek(0, SEEK_END)
         return self.bio.tell()

@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-from typing import override
 
 from binaryninja import (
     Architecture,
@@ -39,11 +38,11 @@ class BinjaDriver(Driver):
         super().__init__()
         self.data = data
 
-    @override
+    # @override
     def read(self, offset: int, size: int) -> bytes:
         return self.data.read(offset, size)
 
-    @override
+    # @override
     def size(self) -> int:
         return self.data.length
 
@@ -128,11 +127,11 @@ class IbisView(BinaryView):
             print(e)
             return False
 
-    @override
+    # @override
     def perform_get_address_size(self) -> int:
         return 8
 
-    @override
+    # @override
     def init(self):
         if not self.parent_view:
             raise RuntimeError("Missing parent view")

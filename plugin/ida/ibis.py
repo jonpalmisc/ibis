@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-from typing import override
 
 import ida_bytes
 import ida_entry
@@ -32,7 +31,7 @@ class IDADriver(Driver):
         super().__init__()
         self.fd = fd
 
-    @override
+    # @override
     def read(self, offset: int, size: int) -> bytes:
         self.fd.seek(offset)
         return self.fd.read(size)

@@ -70,7 +70,17 @@ def _detect_layout_v1585(_: Context, driver: Driver) -> Layout:
     # but the two strings below reliably appear at the start of CONST and can be
     # used to locate the segment boundary.
     const_start_offset = driver.find_any(
-        [b"nor0\x00", b"%llx:%d\x00"], 0, const_end_offset, 0x800, True
+        [
+            b"arch_get_cluster_id\x00",
+            b"arch_vtop\x00",
+            b"arch_get_virt_address_bits\x00",
+            b"nor0\x00",
+            b"%llx:%d\x00",
+        ],
+        0,
+        const_end_offset,
+        0x800,
+        True,
     )
     if not const_start_offset:
         raise AnalysisError("failed to find CONST start")

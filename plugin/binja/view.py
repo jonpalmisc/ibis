@@ -156,10 +156,7 @@ class IbisView(BinaryView):
                 if self.read_int(addr, 4, False) == 0xD503237F:  # pacibsp
                     self.add_function(addr)
 
-            self.add_entry_point(layout.text.start)
-            self.define_user_symbol(
-                Symbol(SymbolType.FunctionSymbol, layout.text.start, "_start")
-            )
+            start = layout.text.start
 
         except Exception as e:
             if self.parse_only:
@@ -184,5 +181,10 @@ class IbisView(BinaryView):
                 | SegmentFlag.SegmentExecutable,
                 SectionSemantics.ReadOnlyCodeSectionSemantics,
             )
+
+            start = 0
+
+        self.add_entry_point(start)
+        self.define_user_symbol(Symbol(SymbolType.FunctionSymbol, start, "_start"))
 
         return True

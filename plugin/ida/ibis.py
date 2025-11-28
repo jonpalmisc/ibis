@@ -145,7 +145,8 @@ def load_file(fd, neflags: int, _):
                 print(f"Adding function @ {addr:#x}...")
                 ida_funcs.add_func(addr)
 
-        ida_entry.add_entry(0, layout.text.start, "_start", True)
+        start = layout.text.start
+
     except Exception as e:
         print(e)
 
@@ -167,5 +168,9 @@ def load_file(fd, neflags: int, _):
             | ida_segment.SEGPERM_WRITE
             | ida_segment.SEGPERM_EXEC,
         )
+
+        start = 0
+
+    ida_entry.add_entry(0, start, "_start", True)
 
     return 1

@@ -12,7 +12,7 @@ def test_rom_v1873_t7000si_30cd00a():
         assert layout.text == Region(0x100000000, 0x100015080, 0)
         assert layout.const == Region(0x100015080, 0x100017E70, 0x15080)
         # assert layout.rodata == Region(0x100017E70, 0x100018630, 0x17E70)
-        assert layout.data == Region(0x180080000, 0x1800807C0, 0x17E70)
+        assert layout.data == Region(0x180080000, 0x1800807C0, 0x18000)
         assert layout.bss == Region(0x1800807C0, 0x180087AA0)
 
 
@@ -22,7 +22,7 @@ def test_rom_v2234_s8003si_bad3102():
 
         assert layout.text == Region(0x100000000, 0x100015580, 0)
         assert layout.const == Region(0x100015580, 0x1000185CC, 0x15580)
-        assert layout.data == Region(0x180080000, 0x180080840, 0x185CC)
+        assert layout.data == Region(0x180080000, 0x180080840, 0x19000)
         assert layout.bss == Region(0x180080840, 0x180088368)
 
 
@@ -33,7 +33,7 @@ def test_rom_v3332_t8015si_af56128():
         assert layout.text == Region(0x100000000, 0x100017240, 0)
         assert layout.const == Region(0x100017240, 0x10001B988, 0x17240)
         # assert layout.rodata == Region(0x10001B988, 0x10001CA88, 0x1B988)
-        assert layout.data == Region(0x180000000, 0x180001100, 0x1B988)
+        assert layout.data == Region(0x180000000, 0x180001100, 0x1C000)
         assert layout.bss == Region(0x180001100, 0x180009FB8)
 
 
@@ -44,7 +44,7 @@ def test_rom_v6338_t8110si_08c48dc():
         assert layout.text == Region(0x100000000, 0x1000286C0, 0)
         assert layout.const == Region(0x1000286C0, 0x1000309A8, 0x286C0)
         # assert layout.rodata == Region(0x1000309A8, 0x100031028, 0x309A8)
-        assert layout.data == Region(0x1FC00C000, 0x1FC00C680, 0x309A8)
+        assert layout.data == Region(0x1FC00C000, 0x1FC00C680, 0x31000)
         assert layout.bss == Region(0x1FC00C680, 0x1FC028081)
 
 
@@ -65,7 +65,7 @@ def test_iboot_v4513_j317_e755528():
 
         assert layout.text == Region(0x19C030000, 0x19C0A8A00, 0)
         assert layout.const == Region(0x19C0A8A00, 0x19C0E34C8, 0x78A00)
-        assert layout.data == Region(0x19C0E4000, 0x19C1AAF40, 0xB34C8)
+        assert layout.data == Region(0x19C0E4000, 0x19C1AAF40, 0xB4000)
         assert layout.bss == Region(0x19C1AAF40, 0x19C1CC0E0)
 
 
@@ -75,7 +75,7 @@ def test_iboot_v6723_n104_fbbc050():
 
         assert layout.text == Region(0x19C030000, 0x19C160280, 0)
         assert layout.const == Region(0x19C160280, 0x19C16D160, 0x130280)
-        assert layout.data == Region(0x19C170000, 0x19C2ADB00, 0x13D160)
+        assert layout.data == Region(0x19C170000, 0x19C2ADB00, 0x140000)
         assert layout.bss == Region(0x19C2ADB00, 0x19C2D42A2)
 
 
@@ -115,7 +115,7 @@ def test_stage1_b3319_d11_e919da8():
 
         assert layout.text == Region(0x1800B0000, 0x1800DFEC0, 0)
         assert layout.const == Region(0x1800DFEC0, 0x1800F14F4, 0x2FEC0)
-        assert layout.data == Region(0x1800F4000, 0x1800F5C00, 0x414F4)
+        assert layout.data == Region(0x1800F4000, 0x1800F5C00, 0x44000)
         assert layout.bss == Region(0x1800F5C00, 0x18010DCFC)
 
 

@@ -46,7 +46,7 @@ def _read_table(driver: Driver, count: int) -> list[int]:
     return table
 
 
-def _detect_layout_v1585(_: Context, driver: Driver) -> Layout:
+def _detect_layout_v1585(context: Context, driver: Driver) -> Layout:
     """
     Detect the layout of images newer than major verison 1585.
     """
@@ -93,7 +93,12 @@ def _detect_layout_v1585(_: Context, driver: Driver) -> Layout:
 
     text = Region(table[0], const_start_addr, 0)
     const = Region(const_start_addr, const_end_addr, const_start_offset)
-    data = Region(table[4], table[5], const_end_offset)
+
+    data_start_offset = _align_up(
+        const_end_offset, 0x1000 if context.app == App.SECURE_ROM else 0x4000
+    )
+    data = Region(table[4], table[5], data_start_offset)
+
     bss = Region(table[6], table[7])
 
     return Layout(text, const, data, bss)

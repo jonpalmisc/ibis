@@ -1,6 +1,6 @@
 [project]
 name = "ibis"
-version = "1.2.1"
+version = "1.2.2"
 description = "Library and plugins for mapping 64-bit iBoot-like binaries"
 readme = "README.md"
 authors = [

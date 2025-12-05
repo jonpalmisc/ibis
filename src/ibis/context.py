@@ -43,6 +43,11 @@ class App(Enum):
             case _:
                 raise UnsupportedAppError(name)
 
+    def is_iboot(self):
+        """Is this iBoot, iBootStage1, or iBootStage2?"""
+
+        return self in [App.IBOOT, App.IBOOT_STAGE_1, App.IBOOT_STAGE_2]
+
     def __str__(self) -> str:
         return self.value
 

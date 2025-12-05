@@ -162,7 +162,7 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
     text = Region(table[0], const_start_addr, 0)
     const = Region(const_start_addr, const_end_addr, const_start_offset)
     data = Region(
-        const_end_addr if context.app == App.IBOOT else table[6],
+        const_end_addr if context.app.is_iboot() else table[6],
         table[7],
         const_end_addr - table[0],
     )

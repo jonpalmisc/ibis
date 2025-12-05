@@ -60,7 +60,7 @@ def add_segment(
 ):
     if file_offset is not None and input_size:
         size = min(size, input_size - file_offset)
-        fd.file2base(file_offset, ea, ea + size, False)
+        fd.file2base(file_offset, ea, ea + size, ida_loader.FILEREG_PATCHABLE)
 
     segm = ida_segment.segment_t()
     segm.bitness = 2  # 64-bit

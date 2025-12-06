@@ -52,7 +52,7 @@ class Driver(ABC):
         while True:
             chunk = self.read(cursor, chunk_size)
 
-            if chunk_offset := self._find_first(chunk, patterns):
+            if (chunk_offset := self._find_first(chunk, patterns)) is not None:
                 return cursor + chunk_offset
 
             cursor += -chunk_size if backwards else chunk_size

@@ -43,6 +43,9 @@ def _read_table(driver: Driver, count: int) -> list[int]:
         logging.debug("Ignoring first 3 elements of layout table... (old format)")
         table = table[3:]
 
+    # for i in range(len(table)):
+    #     logging.debug(f"table[{i}] = {table[i]:#x}")
+
     return table
 
 
@@ -94,11 +97,19 @@ def _detect_layout_v1585(context: Context, driver: Driver) -> Layout:
     text = Region(table[0], const_start_addr, 0)
     const = Region(const_start_addr, const_end_addr, const_start_offset)
 
-    data_start_offset = _align_up(
-        const_end_offset, 0x1000 if context.app == App.SECURE_ROM else 0x4000
-    )
-    data = Region(table[4], table[5], data_start_offset)
+    # DATA should always start at a page boundary, but the page size is not the
+    # same on all devices...
+    data_start_offset = _align_up(const_end_offset, 0x1000)
 
+    # As a cheap hack to avoid keeping a mapping of target to page size, we can
+    # try first rounding up to a 4K page and reading the following page. If the
+    # page is full of zeroes, then we are probably still within the segment
+    # padding and should round up to the 16K boundary instead.
+    data_first_4k = driver.read(data_start_offset, 0x1000)
+    if all(b == 0 for b in data_first_4k):
+        data_start_offset = _align_up(data_start_offset, 0x4000)
+
+    data = Region(table[4], table[5], data_start_offset)
     bss = Region(table[6], table[7])
 
     return Layout(text, const, data, bss)
@@ -154,12 +165,17 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
     if not const_start_offset:
         raise AnalysisError("failed to find CONST start")
 
-    const_start_offset = _align_up(const_start_offset, 0x10)
+    const_start_offset = _align_down(const_start_offset, 0x10)
     const_start_addr = table[0] + const_start_offset
 
-    # Despite what the table reports, CONST is always padded out to a multiple
-    # of the page size in newer iBoot versions, even in ROM.
-    const_end_addr = _align_up(table[2], 0x4000)
+    const_end_offset = _align_up(table[2] - table[0], 0x1000)
+
+    # See explanation in function above; we need to guess the page size.
+    data_first_4k = driver.read(const_end_offset, 0x1000)
+    if all(b == 0 for b in data_first_4k):
+        const_end_offset = _align_up(const_end_offset, 0x4000)
+
+    const_end_addr = table[0] + const_end_offset
 
     text = Region(table[0], const_start_addr, 0)
     const = Region(const_start_addr, const_end_addr, const_start_offset)

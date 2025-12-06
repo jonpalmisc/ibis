@@ -37,6 +37,17 @@ def test_rom_v3332_t8015si_af56128():
         assert layout.bss == Region(0x180001100, 0x180009FB8)
 
 
+def test_rom_v4479_t8030_7f8eca4():
+    with open_corpus_binary("SecureROM-4479.0.0.100.4-t8030si-7f8eca4") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x100000000, 0x10001EBC0, 0)
+        assert layout.const == Region(0x10001EBC0, 0x100025390, 0x1EBC0)
+        # assert layout.rodata == Region(0x10001B988, 0x10001CA88, 0x1B988)
+        assert layout.data == Region(0x19C00C000, 0x19C00D100, 0x28000)
+        assert layout.bss == Region(0x19C00D100, 0x19C014060)
+
+
 def test_rom_v6338_t8110si_08c48dc():
     with open_corpus_binary("SecureROM-6338.0.0.200.19-t8110si-08c48dc") as f:
         layout = analyze(BinaryIODriver(f))
@@ -44,7 +55,7 @@ def test_rom_v6338_t8110si_08c48dc():
         assert layout.text == Region(0x100000000, 0x1000286C0, 0)
         assert layout.const == Region(0x1000286C0, 0x1000309A8, 0x286C0)
         # assert layout.rodata == Region(0x1000309A8, 0x100031028, 0x309A8)
-        assert layout.data == Region(0x1FC00C000, 0x1FC00C680, 0x31000)
+        assert layout.data == Region(0x1FC00C000, 0x1FC00C680, 0x34000)
         assert layout.bss == Region(0x1FC00C680, 0x1FC028081)
 
 
@@ -109,7 +120,7 @@ def test_iboot_v13822_v53_ff63963():
         assert layout.bss is None
 
 
-def test_stage1_b3319_d11_e919da8():
+def test_stage1_v3319_d11_e919da8():
     with open_corpus_binary("iBootStage1-3319.0.0.1.9-d11-e919da8") as f:
         layout = analyze(BinaryIODriver(f))
 
@@ -117,6 +128,16 @@ def test_stage1_b3319_d11_e919da8():
         assert layout.const == Region(0x1800DFEC0, 0x1800F14F4, 0x2FEC0)
         assert layout.data == Region(0x1800F4000, 0x1800F5C00, 0x44000)
         assert layout.bss == Region(0x1800F5C00, 0x18010DCFC)
+
+
+def test_stage1_v7459_ipad5_807e588():
+    with open_corpus_binary("iBootStage1-7459.140.15-ipad5-807e588") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x180380000, 0x1803AB9C0, 0)
+        assert layout.const == Region(0x1803AB9C0, 0x1803B2000, 0x2B9C0)
+        assert layout.data == Region(0x1803B2000, 0x1803B2A00, 0x32000)
+        assert layout.bss == Region(0x1803B2A00, 0x1803BD0F8)
 
 
 def test_avp_v7459_vmapple2_ae20f87():

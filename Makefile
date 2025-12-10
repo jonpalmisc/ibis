@@ -10,10 +10,12 @@ all:
 
 .PHONY: install-binja
 install-binja:
+	mkdir -p $(BN_PLUGINS_PATH)
 	$(LN) $(shell pwd)/plugin/binja $(BN_PLUGINS_PATH)/view_ibis
 
 .PHONY: install-ida
 install-ida:
+	mkdir -p $(IDA_LOADERS_PATH)
 	$(LN) $(shell pwd)/plugin/ida/ibis.py $(IDA_LOADERS_PATH)/ibis.py
 
 .PHONY: uninstall

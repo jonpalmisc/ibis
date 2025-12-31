@@ -46,6 +46,10 @@ $ make install-ida
 > disassembler to use a virtual environment. If you wish to install the plugins
 > manually, replicate what is done in the Makefile.
 
+> [!TIP]
+> If you use Binary Ninja, you can also install Ibis from the Binary Ninja
+> plugin manager.
+
 ## Troubleshooting
 
 If a binary fails to load or the detected segments don't look quite right,

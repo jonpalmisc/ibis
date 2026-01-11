@@ -21,8 +21,7 @@ planned features are detailed as follows:
   segments with correct boundaries and permissions.
 - [x] Function prologue detection (helps prevent run-on functions when
   disassemblers fail to identify `noreturn` functions).
-- [ ] Automatic known function identification via string reference heuristics.
-  (https://github.com/jonpalmisc/ibis/issues/2)
+- [x] Automatic known function identification via string reference heuristics.
 - [ ] Automatic detection & marking of outlined functions.
   (https://github.com/jonpalmisc/ibis/issues/4)
 - [ ] 🔥🌸⁉️

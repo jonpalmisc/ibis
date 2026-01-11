@@ -1,6 +1,9 @@
 import sys
+import traceback
+from collections.abc import Iterator
 from pathlib import Path
 
+import ida_auto
 import ida_bytes
 import ida_entry
 import ida_funcs
@@ -9,7 +12,10 @@ import ida_idaapi
 import ida_idp
 import ida_kernwin
 import ida_loader
+import ida_name
 import ida_segment
+import ida_strlist
+import ida_xref
 
 IBIS_PATH = Path(__file__).resolve().parent.parent.parent / "src"
 
@@ -21,35 +27,99 @@ from ibis.driver import Driver  # noqa: E402
 from ibis.layout import FALLBACK_BSS_SIZE, Layout  # noqa: E402
 from ibis.plugins import (  # noqa: E402
     ANALYZE_FAIL_MESSAGE,
+    ERROR_HEADER,
     ISSUES_URL,
     MISSING_BSS_BOUNDS,
+    PLEASE_REPORT_GUI_MESSAGE,
+    PLEASE_REPORT_MESSAGE,
+    POST_ANALYZE_FAIL_MESSAGE,
 )
+from ibis.strings import UNIQUE_STR_XREFS  # noqa: E402
 
 
-class IDADriver(Driver):
-    def __init__(self, fd) -> None:
+def report_exception(message: str):
+    print(f"\n{ERROR_HEADER}\n")
+    print(f"{message}\n")
+    print(traceback.format_exc())
+    print(f"{PLEASE_REPORT_MESSAGE} ({ISSUES_URL})")
+
+    ida_kernwin.warning(f"{message}\n\n{PLEASE_REPORT_GUI_MESSAGE}\n\n{ISSUES_URL}")
+
+
+def string_info_decode(info: ida_strlist.string_info_t) -> str | None:
+    content = ida_bytes.get_strlit_contents(info.ea, info.length, info.type)
+
+    if content:
+        try:
+            return content.decode()
+        except Exception:
+            pass
+
+    return None
+
+
+def strings_containing(pattern: str) -> Iterator[ida_strlist.string_info_t]:
+    info = ida_strlist.string_info_t()
+
+    for i in range(ida_strlist.get_strlist_qty()):
+        if not ida_strlist.get_strlist_item(info, i):
+            continue
+
+        decoded = string_info_decode(info)
+        if decoded and pattern in decoded:
+            yield info
+
+            info = ida_strlist.string_info_t()  # New info object for next iteration.
+
+
+def xrefs_to(ea: int) -> Iterator[ida_xref.xrefblk_t]:
+    xref = ida_xref.xrefblk_t()
+
+    # This might bite us later if we don't limit it to code references.
+    if xref.first_to(ea, ida_xref.XREF_ALL):
+        yield xref
+
+        while xref.next_to():
+            yield xref
+
+
+def set_name_from_str_xref(name: str, pattern: str) -> ida_funcs.func_t | None:
+    if not (needle := next(strings_containing(pattern), None)):
+        return None
+
+    if not (ref := next(xrefs_to(needle.ea), None)):
+        return None
+
+    if not (func := ida_funcs.get_func(ref.frm)):
+        return None
+
+    ida_name.set_name(func.start_ea, name)
+    return func
+
+
+class PostProcessHook(ida_idp.IDB_Hooks):
+    def __init__(self):
         super().__init__()
-        self.fd = fd
 
-    # @override
-    def read(self, offset: int, size: int) -> bytes:
-        self.fd.seek(offset)
-        return self.fd.read(size)
+    def auto_empty_finally(self, *args):
+        try:
+            panic = set_name_from_str_xref("_panic", "double panic in")
+            if not panic:
+                raise ValueError("Failed to find panic function")
 
-    def size(self) -> int:
-        self.fd.seek(0, ida_idaapi.SEEK_END)
-        return self.fd.tell()
+            panic.flags |= ida_funcs.FUNC_NORET
+            ida_funcs.update_func(panic)
+
+            for name, needle in UNIQUE_STR_XREFS.items():
+                set_name_from_str_xref(name, needle)
+
+        except Exception:
+            report_exception(POST_ANALYZE_FAIL_MESSAGE)
+
+        ida_auto.auto_wait()
 
 
-def accept_file(fd, _):
-    try:
-        ctx = IDADriver(fd).detect_context()
-
-        return {"format": f"{ctx.app.value}", "processor": "arm"}
-    except Exception as e:
-        print(e)
-
-    return 0
+POST_PROCESS_HOOK: PostProcessHook | None = None
 
 
 input_size = None  # XXX: Global, set in `load_file`.
@@ -121,6 +191,32 @@ def apply_layout(fd, layout: Layout):
     )
 
 
+class IDADriver(Driver):
+    def __init__(self, fd) -> None:
+        super().__init__()
+        self.fd = fd
+
+    # @override
+    def read(self, offset: int, size: int) -> bytes:
+        self.fd.seek(offset)
+        return self.fd.read(size)
+
+    def size(self) -> int:
+        self.fd.seek(0, ida_idaapi.SEEK_END)
+        return self.fd.tell()
+
+
+def accept_file(fd, _):
+    try:
+        ctx = IDADriver(fd).detect_context()
+
+        return {"format": f"{ctx.app.value}", "processor": "arm"}
+    except Exception as e:
+        print(e)
+
+    return 0
+
+
 def load_file(fd, neflags: int, _):
     ida_idp.set_processor_type("arm", ida_idp.SETPROC_LOADER)
     ida_ida.inf_set_app_bitness(64)
@@ -147,15 +243,8 @@ def load_file(fd, neflags: int, _):
 
         start = layout.text.start
 
-    except Exception as e:
-        print(e)
-
-        ida_kernwin.warning(
-            f"{ANALYZE_FAIL_MESSAGE}\n\nPlease report this bug!\n\n{ISSUES_URL}"
-        )
-
-        print(ANALYZE_FAIL_MESSAGE)
-        print(f"Please report this bug! ({ISSUES_URL})")
+    except Exception:
+        report_exception(ANALYZE_FAIL_MESSAGE)
 
         add_segment(
             fd,
@@ -172,5 +261,9 @@ def load_file(fd, neflags: int, _):
         start = 0
 
     ida_entry.add_entry(0, start, "_start", True)
+
+    global POST_PROCESS_HOOK
+    POST_PROCESS_HOOK = PostProcessHook()
+    POST_PROCESS_HOOK.hook()
 
     return 1

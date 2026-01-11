@@ -4,10 +4,12 @@ from pathlib import Path
 from binaryninja import (
     Architecture,
     BinaryView,
+    Function,
     MessageBoxIcon,
     Platform,
     SectionSemantics,
     SegmentFlag,
+    StringReference,
     Symbol,
     SymbolType,
     log_error_for_exception,
@@ -25,10 +27,32 @@ from ibis.driver import Driver  # noqa: E402
 from ibis.layout import FALLBACK_BSS_SIZE, Layout  # noqa: E402
 from ibis.plugins import (  # noqa: E402
     ANALYZE_FAIL_MESSAGE,
-    ANALYZE_FAIL_TITLE,
+    ERROR_HEADER,
+    ERROR_TITLE,
     ISSUES_URL,
     MISSING_BSS_BOUNDS,
+    PLEASE_REPORT_GUI_MESSAGE,
+    PLEASE_REPORT_MESSAGE,
 )
+from ibis.strings import UNIQUE_STR_XREFS  # noqa: E402
+
+
+def report_exception(message: str):
+    log_error(f"{ERROR_HEADER}")
+    log_error(" ")  # Newlines & empty lines are stripped, so we have to do this.
+
+    # The exception here is always the current exception. A clickable "details"
+    # button will be added to the end of the logged message.
+    log_error_for_exception(message)
+
+    log_error(" ")
+    log_error(f"{PLEASE_REPORT_MESSAGE} ({ISSUES_URL})")
+
+    show_message_box(
+        ERROR_TITLE,
+        f"{message}\n\n{PLEASE_REPORT_GUI_MESSAGE}\n\n{ISSUES_URL}",
+        icon=MessageBoxIcon.WarningIcon,
+    )
 
 
 class BinjaDriver(Driver):
@@ -118,6 +142,30 @@ class IbisView(BinaryView):
             SectionSemantics.ReadWriteDataSectionSemantics,
         )
 
+    def _first_string_matching(self, pattern: str) -> StringReference | None:
+        return next((s for s in self.strings if pattern in s.value), None)
+
+    def _set_name_from_str_xref(self, name: str, pattern: str) -> Function | None:
+        if not (needle := self._first_string_matching(pattern)):
+            return None
+
+        if not (ref := next(self.get_code_refs(needle.start))):
+            return None
+
+        if not (funcs := self.get_functions_containing(ref.address)):
+            return None
+
+        funcs[0].name = name
+        return funcs[0]
+
+    def _post_process(self):
+        panic = self._set_name_from_str_xref("_panic", "double panic in")
+        if panic:
+            panic.can_return = False
+
+        for func_name, needle in UNIQUE_STR_XREFS.items():
+            self._set_name_from_str_xref(func_name, needle)
+
     @classmethod
     def is_valid_for_data(cls, data: BinaryView) -> bool:
         try:
@@ -158,18 +206,11 @@ class IbisView(BinaryView):
 
             start = layout.text.start
 
-        except Exception as e:
+            self.add_analysis_completion_event(self._post_process)
+
+        except Exception:
             if self.parse_only:
-                log_error_for_exception(e)
-
-                show_message_box(
-                    ANALYZE_FAIL_TITLE,
-                    f"{ANALYZE_FAIL_MESSAGE}\n\nPlease report this bug!\n\n{ISSUES_URL}",
-                    icon=MessageBoxIcon.WarningIcon,
-                )
-
-                log_error(ANALYZE_FAIL_MESSAGE)
-                log_error(f"Please report this bug! ({ISSUES_URL})")
+                report_exception(ANALYZE_FAIL_MESSAGE)
 
             self._add_segment(
                 "APP",

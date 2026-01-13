@@ -236,7 +236,7 @@ def load_file(fd, neflags: int, _):
         # Analysis can get confused about function bounds when if it fails to detect
         # no-return functions. A cheap hack is to create functions starting at every
         # PACIBSP, which shouldn't ever appear in the middle of a function.
-        for addr in range(layout.text.start, layout.text.end, 4):
+        for addr in range(layout.text.end - 4, layout.text.start - 4, -4):
             if ida_bytes.get_dword(addr) == 0xD503237F:  # pacibsp
                 print(f"Adding function @ {addr:#x}...")
                 ida_funcs.add_func(addr)

@@ -200,7 +200,7 @@ class IbisView(BinaryView):
             # detect no-return functions. A cheap hack is to create functions
             # starting at every PACIBSP, which shouldn't ever appear in the middle
             # of a function.
-            for addr in range(layout.text.start, layout.text.end, 4):
+            for addr in range(layout.text.end - 4, layout.text.start - 4, -4):
                 if self.read_int(addr, 4, False) == 0xD503237F:  # pacibsp
                     self.add_function(addr)
 

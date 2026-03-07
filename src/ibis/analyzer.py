@@ -151,6 +151,7 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
             [b"virt_firmware\x00", b"double panic in\x00"]
             if context.app == App.AVP_BOOTER
             else [
+                b"boot-command\x00",
                 b"%llx:%d\x00",
                 b"anc_firmware\x00",
                 b"nor0\x00",

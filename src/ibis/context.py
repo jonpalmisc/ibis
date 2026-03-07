@@ -9,7 +9,7 @@ class BannerParseError(Exception):
 
 def _parse_banner(banner: str) -> tuple[str, str]:
     try:
-        return re.findall(r"(\w+) for (\w+),.*", banner)[0]
+        return re.findall(r"(\w+) for (\w+).*Copyright", banner)[0]
     except Exception as e:
         raise BannerParseError(banner) from e
 
@@ -85,5 +85,13 @@ class Context:
     def __init__(self, banner: str, tag: str) -> None:
         app, self.target = _parse_banner(banner)
 
-        self.app = App.parse(app)
         self.version = Version(tag)
+
+        if app == "mBoot" and self.version.major == 18000:
+            # XXX: This is an edge case that appeared in iOS 26.4 betas. It's
+            # still unclear if this is an intentional change or not, so as a
+            # caution for now, we handle it manually rather than supporting it
+            # when parsing the app string.
+            app = App.IBOOT
+        else:
+            self.app = App.parse(app)

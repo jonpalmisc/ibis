@@ -32,7 +32,7 @@ class App(Enum):
         match name:
             case "SecureROM":
                 return cls.SECURE_ROM
-            case "iBoot" | "iBSS" | "iBEC":
+            case "mBoot" | "iBoot" | "iBSS" | "iBEC":
                 return cls.IBOOT
             case "iBootStage1":
                 return cls.IBOOT_STAGE_1
@@ -86,12 +86,4 @@ class Context:
         app, self.target = _parse_banner(banner)
 
         self.version = Version(tag)
-
-        if app == "mBoot" and self.version.major == 18000:
-            # XXX: This is an edge case that appeared in iOS 26.4 betas. It's
-            # still unclear if this is an intentional change or not, so as a
-            # caution for now, we handle it manually rather than supporting it
-            # when parsing the app string.
-            app = App.IBOOT
-        else:
-            self.app = App.parse(app)
+        self.app = App.parse(app)

@@ -22,10 +22,13 @@ def _align_up(v: int, size: int) -> int:
     return _align_down(v + size - 1, size)
 
 
-_LAYOUT_TABLE_OFFSET = 0x300
+# Newer iBoot embeds most layout table items as high virtual addresses. Ibis
+# currently offers no special handling for microkernel iBoot nor virtual
+# addressing, so this mask yields the value we actually want.
+_LOW_VA_MASK = 0x000003FFFFFFFFFF
 
 
-def _read_table(driver: Driver, count: int) -> list[int]:
+def _read_table(context: Context, driver: Driver, count: int) -> list[int]:
     """
     Read the "layout table" embedded in the binary, which contains some helpful
     region information.
@@ -35,13 +38,17 @@ def _read_table(driver: Driver, count: int) -> list[int]:
     """
 
     table = [
-        struct.unpack("q", driver.read(_LAYOUT_TABLE_OFFSET + (i * 8), 8))[0]
+        struct.unpack("q", driver.read(driver.layout_table_offset + (i * 8), 8))[0]
         for i in range(count)
     ]
 
     if table[0] & 0xFFF != 0:
         logging.debug("Ignoring first 3 elements of layout table... (old format)")
         table = table[3:]
+
+    if context.version.major >= 16000:
+        # Normalize virtual addresses on iOS 27+ 'mBoot'-style images.
+        table = [v & _LOW_VA_MASK for v in table]
 
     # for i in range(len(table)):
     #     logging.debug(f"table[{i}] = {table[i]:#x}")
@@ -65,7 +72,7 @@ def _detect_layout_v1585(context: Context, driver: Driver) -> Layout:
     #   6: BSS Start
     #   7: BSS End
     #
-    table = _read_table(driver, 12)
+    table = _read_table(context, driver, 12)
 
     const_end_offset = table[2]
 
@@ -130,7 +137,7 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
     #   7: DATA End / BSS Start
     #   8: BSS End
     #
-    table = _read_table(driver, 12)
+    table = _read_table(context, driver, 12)
 
     # CONST end is stored as an address in these newer versions, but we can rely
     # on it being contiguous with TEXT, so just take the difference from TEXT
@@ -187,8 +194,7 @@ def _detect_layout_v6823(context: Context, driver: Driver) -> Layout:
 
     bss = Region(table[7], table[8])
     if bss.end < 0:
-        # FIXME: Something weird going on here on newer iBoot, table has a
-        # negative value that looks like a high memory VA.
+        # XXX: 'mBoot'-style images released prior to iOS 27 need this crutch.
         bss = None
 
     return Layout(text, const, data, bss)

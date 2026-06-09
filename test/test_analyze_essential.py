@@ -120,6 +120,16 @@ def test_iboot_v13822_v53_ff63963():
         assert layout.bss is None
 
 
+def test_iboot_v20356_v53_b83615c():
+    with open_corpus_binary("iBoot-20356.0.0.502.1-v53-b83615c") as f:
+        layout = analyze(BinaryIODriver(f))
+
+        assert layout.text == Region(0x1FC08C000, 0x1FC3F89C0, 0)
+        assert layout.const == Region(0x1FC3F89C0, 0x1FC404000, 0x36C9C0)
+        assert layout.data == Region(0x1FC404000, 0x1FC499E80, 0x378000)
+        assert layout.bss == Region(0x1FC499E80, 0x1FC4C1DD0)
+
+
 def test_stage1_v3319_d11_e919da8():
     with open_corpus_binary("iBootStage1-3319.0.0.1.9-d11-e919da8") as f:
         layout = analyze(BinaryIODriver(f))

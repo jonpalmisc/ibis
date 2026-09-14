@@ -2,7 +2,7 @@
   "pluginmetadataversion": 2,
   "name": "Ibis",
   "description": "Segment-accurate iBoot/SecureROM loader",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "author": "jonpalmisc",
   "type": ["binaryview"],
   "api": ["python3"],

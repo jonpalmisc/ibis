@@ -238,7 +238,6 @@ def load_file(fd, neflags: int, _):
         # PACIBSP, which shouldn't ever appear in the middle of a function.
         for addr in range(layout.text.end - 4, layout.text.start - 4, -4):
             if ida_bytes.get_dword(addr) == 0xD503237F:  # pacibsp
-                print(f"Adding function @ {addr:#x}...")
                 ida_funcs.add_func(addr)
 
         start = layout.text.start

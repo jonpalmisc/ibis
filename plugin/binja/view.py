@@ -89,7 +89,7 @@ class IbisView(BinaryView):
         flags: int,
         semantics: SectionSemantics,
     ):
-        length = min(length, 1 << 21)  # Cap segment size to prevent denial of service.
+        length = min(length, 3 << 21)  # Cap segment size to prevent denial of service.
         data_length = 0 if data_offset is None else length
 
         if self.parent_view and data_offset:

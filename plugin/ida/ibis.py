@@ -139,9 +139,16 @@ def add_segment(
 
     ida_segment.add_segm_ex(segm, name, type, ida_segment.ADDSEG_OR_DIE)
 
+    # XXX: IDA 9.4 changed the segment APIs (by deprecating some of these ones) and "broke" some
+    # undefined behavior we were previously (unknowingly) relying on.
+    #
+    # TLDR: After `add_segm_ex`, `segm` becomes an invalid handle, and we need to refresh it every
+    # time we want to make changes or use it again.
+    segm = ida_segment.getseg(segm.start_ea)
     ida_segment.set_segm_class(segm, type)
-    segm.perm = perm
 
+    segm = ida_segment.getseg(segm.start_ea)  # Refresh one last time...
+    segm.perm = perm
     ida_segment.update_segm(segm)
 
 
